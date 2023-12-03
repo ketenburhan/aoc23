@@ -24,9 +24,7 @@ fn part1(data: &str) -> usize {
             let is_valid = sets
                 .map(|text| {
                     let mut set_data = [0_usize, 0, 0];
-                    println!("text: {}", text);
                     if let Some(red) = re_r.captures(text) {
-                        println!("hehe");
                         set_data[0] = red[1].parse().unwrap();
                     }
                     if let Some(green) = re_g.captures(text) {
@@ -37,7 +35,6 @@ fn part1(data: &str) -> usize {
                     }
                     set_data
                 })
-                .inspect(|set| println!("{:?}", set))
                 .all(|[r, g, b]| r <= MAX_R && g <= MAX_G && b <= MAX_B);
 
             if is_valid {
@@ -50,7 +47,36 @@ fn part1(data: &str) -> usize {
 }
 
 fn part2(data: &str) -> usize {
-    0
+    let re_r = Regex::new(r"(\d+) red").unwrap();
+    let re_g = Regex::new(r"(\d+) green").unwrap();
+    let re_b = Regex::new(r"(\d+) blue").unwrap();
+
+    data.lines()
+        .map(|line| {
+            let game_data = line.split_once(':').unwrap().1.trim();
+            let sets = game_data.split(';');
+            let max = sets
+                .map(|text| {
+                    let mut set_data = [0_usize, 0, 0];
+                    if let Some(red) = re_r.captures(text) {
+                        set_data[0] = red[1].parse().unwrap();
+                    }
+                    if let Some(green) = re_g.captures(text) {
+                        set_data[1] = green[1].parse().unwrap();
+                    }
+                    if let Some(blue) = re_b.captures(text) {
+                        set_data[2] = blue[1].parse().unwrap();
+                    }
+                    set_data
+                })
+                .reduce(|[max_r, max_g, max_b], [r, g, b]| {
+                    [max_r.max(r), max_g.max(g), max_b.max(b)]
+                })
+                .unwrap();
+
+            max.into_iter().product::<usize>()
+        })
+        .sum()
 }
 
 #[cfg(test)]
@@ -66,6 +92,6 @@ mod test {
 
     #[test]
     fn part2_test() {
-        assert_eq!(part2(DATA), 0);
+        assert_eq!(part2(DATA), 2286);
     }
 }
